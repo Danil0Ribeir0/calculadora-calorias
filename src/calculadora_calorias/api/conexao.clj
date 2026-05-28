@@ -1,8 +1,9 @@
 (ns calculadora-calorias.api.conexao
   (:require [clj-http.client :as http-client]
-            [cheshire.core :refer [parse-string]]))
+            [cheshire.core :refer [parse-string]]
+            [environ.core :refer [env]]))
 
-(def chave-api (System/getenv "API_NINJAS_KEY"))
+(def chave-api (env :api-ninjas-key))
 (def url-alimentos "https://api.api-ninjas.com/v1/nutrition")
 
 (defn buscar-informacao-nutricional
