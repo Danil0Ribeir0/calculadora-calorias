@@ -1,20 +1,27 @@
 (ns calculadora-calorias.api.conexao
-  (:require [clj-http.client :as http-client]
-            [cheshire.core :refer [parse-string]]
+  (:require [clj-http.client :as http]
             [environ.core :refer [env]]))
 
-(def chave-api (env :api-ninjas-key))
-(def url-alimentos "https://api.api-ninjas.com/v1/nutrition")
+(defn buscar-alimento [nome-alimento]
+  (let [api-key (env :usda-api-key "DEMO_KEY")
+        url "https://api.nal.usda.gov/fdc/v1/foods/search"]
+    (try
+      (let [resposta (http/get url {:query-params {"query" nome-alimento
+                                                   "api_key" api-key}
+                                    :as :json})]
+        (:body resposta))
+      (catch Exception e
+        (println "Erro ao conectar com USDA:" (.getMessage e))
+        nil))))
 
-(defn buscar-informacao-nutricional
-  [nome-alimento]
-  (try
-    (let [resposta (http-client/get url-alimentos
-                                    {:query-params {"query" nome-alimento}
-                                     :headers      {"X-Api-Key" chave-api}})]
-      {:sucesso? true
-       :dados    (-> (:body resposta)
-                     (parse-string true))})
-    (catch Exception _
-      {:sucesso? false
-       :mensagem "Falha ao consultar a API de alimentos."})))
+(defn buscar-exercicio [nome-exercicio]
+  (let [api-key (env :api-ninjas-key)
+        url "https://api.api-ninjas.com/v1/caloriesburned"]
+    (try
+      (let [resposta (http/get url {:query-params {"activity" nome-exercicio}
+                                    :headers {"X-Api-Key" api-key}
+                                    :as :json})]
+        (:body resposta))
+      (catch Exception e
+        (println "Erro ao conectar com API Ninjas:" (.getMessage e))
+        nil))))

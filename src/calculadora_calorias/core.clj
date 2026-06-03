@@ -1,8 +1,9 @@
 (ns calculadora-calorias.core
-  (:require [calculadora-calorias.controllers.interface :as controller])
+  (:require [ring.adapter.jetty :refer [run-jetty]]
+            [calculadora-calorias.routes :refer [app]])
   (:gen-class))
 
-(defn -main
-  "Ponto de entrada principal da aplicação via terminal."
-  [& args]
-  (controller/iniciar-loop-aplicacao!))
+(defn -main [& args]
+  (println (str "Iniciando o servidor da Calculadora de Calorias..."))
+  (println (str "Servidor rodando na porta 3000!"))
+  (run-jetty app {:port 3000 :join? false}))
