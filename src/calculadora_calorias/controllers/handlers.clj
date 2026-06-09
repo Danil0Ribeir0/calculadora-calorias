@@ -16,7 +16,7 @@
   (let [corpo (:body req)
         perfil-atualizado (db/atualizar-usuario! corpo)]
     {:status 200
-     :body {:mensagem "Perfil e meta calórica atualizados com sucesso!"
+     :body {:mensagem "Perfil e meta calorica atualizados com sucesso!"
             :usuario perfil-atualizado}}))
 
 (defn registrar-transacao [req]
@@ -28,17 +28,21 @@
       (= tipo "refeicao")
       (let [busca-json (api/buscar-alimento nome)
             calorias-calculadas (tratamento/extrair-calorias-alimento busca-json)]
-        (db/adicionar-transacao! [tipo nome calorias-calculadas])
+
+        (db/adicionar-transacao! {:tipo tipo :nome nome :calorias calorias-calculadas})
+
         (response/created "/api/transacoes"
-                          {:mensagem (str "Alimento '" nome "' registrado via USDA!")
+                          {:mensagem (str "Alimento '" nome "' registrado.")
                            :calorias calorias-calculadas}))
 
       (= tipo "exercicio")
       (let [busca-json (api/buscar-exercicio nome)
             calorias-calculadas (tratamento/extrair-calorias-exercicio busca-json)]
-        (db/adicionar-transacao! [tipo nome calorias-calculadas])
+
+        (db/adicionar-transacao! {:tipo tipo :nome nome :calorias calorias-calculadas})
+
         (response/created "/api/transacoes"
-                          {:mensagem (str "Exercício '" nome "' registrado via Ninjas!")
+                          {:mensagem (str "Exercicio '" nome "' registrado.")
                            :calorias calorias-calculadas}))
 
       :else

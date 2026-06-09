@@ -7,6 +7,7 @@
                  [ring/ring-json "0.5.1"]
                  [clj-http "3.12.3"]
                  [cheshire "5.10.0"]
+                 [ring/ring-mock "0.4.0"]
                  [environ "1.2.0"]]
   :plugins [[lein-environ "1.2.0"]]
   :main ^:skip-aot calculadora-calorias.core

@@ -57,6 +57,7 @@
     <orderEntry type="library" name="Leiningen: ring/ring-core:1.9.6" level="project" />
     <orderEntry type="library" name="Leiningen: ring/ring-jetty-adapter:1.9.6" level="project" />
     <orderEntry type="library" name="Leiningen: ring/ring-json:0.5.1" level="project" />
+    <orderEntry type="library" name="Leiningen: ring/ring-mock:0.4.0" level="project" />
     <orderEntry type="library" name="Leiningen: ring/ring-servlet:1.9.6" level="project" />
     <orderEntry type="library" name="Leiningen: slingshot:0.12.2" level="project" />
     <orderEntry type="library" name="Leiningen: tigris:0.1.2" level="project" />
