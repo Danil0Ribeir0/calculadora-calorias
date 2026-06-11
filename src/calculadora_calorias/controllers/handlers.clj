@@ -1,12 +1,18 @@
 (ns calculadora-calorias.controllers.handlers
   (:require [calculadora-calorias.models.database :as db]
             [calculadora-calorias.api.conexao :as api]
+            [calculadora-calorias.services.servicos :as servicos]
             [calculadora-calorias.api.tratamento :as tratamento]
             [ring.util.response :as response]))
 
 (defn obter-resumo [_]
-  {:status 200
-   :body (db/obter-resumo)})
+  (let [usuario-atual (db/obter-usuario)
+        historico-atual (db/obter-historico)
+        resumo-calculado (servicos/gerar-resumo-diario usuario-atual historico-atual)]
+
+    ;; 4. Devolve o JSON formatado
+    {:status 200
+     :body resumo-calculado}))
 
 (defn obter-historico [_]
   {:status 200
