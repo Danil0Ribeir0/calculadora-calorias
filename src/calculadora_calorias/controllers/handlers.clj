@@ -4,11 +4,11 @@
             [calculadora-calorias.api.tratamento :as tratamento]
             [ring.util.response :as response]))
 
-(defn obter-resumo [req]
+(defn obter-resumo [_]
   {:status 200
    :body (db/obter-resumo)})
 
-(defn obter-historico [req]
+(defn obter-historico [_]
   {:status 200
    :body (db/obter-historico)})
 
