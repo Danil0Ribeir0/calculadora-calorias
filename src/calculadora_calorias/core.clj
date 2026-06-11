@@ -3,7 +3,7 @@
             [calculadora-calorias.routes :refer [app]])
   (:gen-class))
 
-(defn -main [& args]
+(defn -main [& _]
   (println (str "Iniciando o servidor da Calculadora de Calorias..."))
   (println (str "Servidor rodando na porta 3000!"))
   (run-jetty app {:port 3000 :join? false}))

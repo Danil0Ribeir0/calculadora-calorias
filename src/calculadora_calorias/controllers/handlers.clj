@@ -10,7 +10,6 @@
         historico-atual (db/obter-historico)
         resumo-calculado (servicos/gerar-resumo-diario usuario-atual historico-atual)]
 
-    ;; 4. Devolve o JSON formatado
     {:status 200
      :body resumo-calculado}))
 

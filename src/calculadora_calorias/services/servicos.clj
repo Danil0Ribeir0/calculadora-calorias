@@ -8,6 +8,12 @@
           0
           transacoes))
 
+(defn calcular-consumidas [transacoes]
+  (reduce + (map :calorias (filter #(= (:tipo %) "refeicao") transacoes))))
+
+(defn calcular-gastas [transacoes]
+  (reduce + (map :calorias (filter #(= (:tipo %) "exercicio") transacoes))))
+
 (defn analisar-meta [saldo meta-diaria]
   (if (<= saldo meta-diaria)
     "Meta atingida ou abaixo do limite. Excelente!"
@@ -19,5 +25,7 @@
     {:usuario (:nome usuario)
      :meta-diaria meta-calorica
      :saldo-atual saldo
+     :consumidas (calcular-consumidas transacoes) ;; Adicionando ao mapa
+     :gastas (calcular-gastas transacoes)         ;; Adicionando ao mapa
      :status-meta (analisar-meta saldo meta-calorica)
      :total-transacoes (count transacoes)}))

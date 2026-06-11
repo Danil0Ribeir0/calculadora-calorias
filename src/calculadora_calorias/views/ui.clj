@@ -1,6 +1,6 @@
 (ns calculadora-calorias.views.ui
   (:require [clj-http.client :as http]
-            [cheshire.core :refer [generate-string]]) ;; 1. Importamos o Cheshire
+            [cheshire.core :refer [generate-string]])
   (:gen-class))
 
 (defn exibir-menu []
@@ -36,10 +36,13 @@
     (if resposta
       (let [dados (:body resposta)]
         (println "\n--- RESUMO DIARIO ---")
+        (println "Usuario:" (:usuario dados))
         (println "Consumidas:" (:consumidas dados) "kcal")
         (println "Gastas:" (:gastas dados) "kcal")
-        (println "Saldo Atual:" (:saldo dados) "kcal")
-        (println "Meta Diaria:" (:meta dados) "kcal"))
+        (println "Saldo Atual:" (:saldo-atual dados) "kcal")
+        (println "Meta Diaria:" (:meta-diaria dados) "kcal")
+        (println "Status da Meta:" (:status-meta dados))
+        (println "Total de Atividades Registradas:" (:total-transacoes dados)))
       (println "-> Erro ao buscar resumo. O servidor (Terminal 1) esta rodando?"))))
 
 (defn iniciar-cli []
