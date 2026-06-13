@@ -14,18 +14,12 @@
 (defn calcular-gastas [transacoes]
   (reduce + (map :calorias (filter #(= (:tipo %) "exercicio") transacoes))))
 
-(defn analisar-meta [saldo meta-diaria]
-  (if (<= saldo meta-diaria)
-    "Meta atingida ou abaixo do limite. Excelente!"
-    "Atenção: Limite calórico diário ultrapassado."))
-
 (defn gerar-resumo-diario [usuario transacoes]
   (let [saldo (calcular-saldo transacoes)
         meta-calorica (:meta-calorica usuario)]
     {:usuario (:nome usuario)
      :meta-diaria meta-calorica
      :saldo-atual saldo
-     :consumidas (calcular-consumidas transacoes) ;; Adicionando ao mapa
-     :gastas (calcular-gastas transacoes)         ;; Adicionando ao mapa
-     :status-meta (analisar-meta saldo meta-calorica)
+     :consumidas (calcular-consumidas transacoes)
+     :gastas (calcular-gastas transacoes)
      :total-transacoes (count transacoes)}))

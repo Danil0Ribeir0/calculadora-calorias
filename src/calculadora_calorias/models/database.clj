@@ -1,6 +1,10 @@
 (ns calculadora-calorias.models.database)
 
-(def usuario-db (atom {:nome "Usuario Padrao" :meta-calorica 2000}))
+(def usuario-db (atom {:nome "Usuario Padrao"
+                       :altura 0.0
+                       :peso 0.0
+                       :idade 0
+                       :sexo ""}))
 (def transacoes-db (atom []))
 
 (defn atualizar-usuario! [dados]
