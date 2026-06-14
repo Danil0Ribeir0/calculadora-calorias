@@ -44,12 +44,30 @@
               (println "-> Erro: O servidor não está a correr ou a rota está incorreta."))))))))
 
 (defn registrar-atividade [tipo]
-  (print "Digite o nome (em ingles, ex: apple ou running): ")
+  (print "Digite o nome (em ingles): ")
   (flush)
   (let [nome (read-line)
+        quantidade (if (= tipo "refeicao")
+                     (do
+                       (print "Quantidade consumida (em gramas, ex: 150): ")
+                       (flush)
+                       (try (Float/parseFloat (read-line)) (catch Exception _ 100.0)))
+                     nil)
+
+        duracao (if (= tipo "exercicio")
+                  (do
+                    (print "Duracao do exercicio (em minutos, ex: 30): ")
+                    (flush)
+                    (try (Float/parseFloat (read-line)) (catch Exception _ 60.0)))
+                  nil)
+
+        dados-base {:tipo tipo :nome nome}
+        dados-com-qtd (if quantidade (assoc dados-base :quantidade quantidade) dados-base)
+        dados-envio (if duracao (assoc dados-com-qtd :duracao duracao) dados-com-qtd)
+
         url "http://localhost:3000/api/transacoes"
         resposta (try
-                   (http/post url {:body         (generate-string {:tipo tipo :nome nome})
+                   (http/post url {:body         (generate-string dados-envio)
                                    :content-type :json
                                    :accept       :json
                                    :as           :json})
@@ -57,7 +75,7 @@
     (if resposta
       (let [dados (:body resposta)]
         (println "-> Sucesso:" (:mensagem dados) "- Calorias:" (:calorias dados)))
-      (println "-> Erro: O servidor nso esta rodando"))))
+      (println "-> Erro: O servidor não está a correr."))))
 
 (defn mostrar-resumo []
   (let [resposta (try
@@ -70,8 +88,6 @@
         (println "Consumidas:" (:consumidas dados) "kcal")
         (println "Gastas:" (:gastas dados) "kcal")
         (println "Saldo Atual:" (:saldo-atual dados) "kcal")
-        (println "Meta Diaria:" (:meta-diaria dados) "kcal")
-        (println "Status da Meta:" (:status-meta dados))
         (println "Total de Atividades Registradas:" (:total-transacoes dados)))
       (println "-> Erro ao buscar resumo. O servidor está a correr?"))))
 

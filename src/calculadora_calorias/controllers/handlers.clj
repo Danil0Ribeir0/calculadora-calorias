@@ -1,8 +1,6 @@
 (ns calculadora-calorias.controllers.handlers
   (:require [calculadora-calorias.models.database :as db]
-            [calculadora-calorias.api.conexao :as api]
             [calculadora-calorias.services.servicos :as servicos]
-            [calculadora-calorias.api.tratamento :as tratamento]
             [ring.util.response :as response]))
 
 (defn obter-resumo [_]
@@ -21,34 +19,30 @@
   (let [corpo (:body req)
         perfil-atualizado (db/atualizar-usuario! corpo)]
     {:status 200
-     :body {:mensagem "Perfil e meta calorica atualizados com sucesso!"
+     :body {:mensagem "Perfil atualizado com sucesso!"
             :usuario perfil-atualizado}}))
 
 (defn registrar-transacao [req]
   (let [dados (:body req)
         tipo (:tipo dados)
-        nome (:nome dados)]
+        nome (:nome dados)
+        quantidade (:quantidade dados)
+        duracao (:duracao dados)]
 
     (cond
       (= tipo "refeicao")
-      (let [busca-json (api/buscar-alimento nome)
-            calorias-calculadas (tratamento/extrair-calorias-alimento busca-json)]
-
-        (db/adicionar-transacao! {:tipo tipo :nome nome :calorias calorias-calculadas})
-
+      (let [calorias (servicos/calcular-calorias-refeicao nome quantidade)]
+        (db/adicionar-transacao! {:tipo tipo :nome nome :calorias calorias})
         (response/created "/api/transacoes"
-                          {:mensagem (str "Alimento '" nome "' registrado.")
-                           :calorias calorias-calculadas}))
+                          {:mensagem (str "Alimento '" nome "' registrado com " (or quantidade 100) "g.")
+                           :calorias calorias}))
 
       (= tipo "exercicio")
-      (let [busca-json (api/buscar-exercicio nome)
-            calorias-calculadas (tratamento/extrair-calorias-exercicio busca-json)]
-
-        (db/adicionar-transacao! {:tipo tipo :nome nome :calorias calorias-calculadas})
-
+      (let [calorias (servicos/calcular-calorias-exercicio nome duracao)]
+        (db/adicionar-transacao! {:tipo tipo :nome nome :calorias calorias})
         (response/created "/api/transacoes"
-                          {:mensagem (str "Exercicio '" nome "' registrado.")
-                           :calorias calorias-calculadas}))
+                          {:mensagem (str "Exercicio '" nome "' registrado com " (or duracao 60) " min.")
+                           :calorias calorias}))
 
       :else
       (response/bad-request {:erro "O campo 'tipo' deve ser 'refeicao' ou 'exercicio'."}))))
