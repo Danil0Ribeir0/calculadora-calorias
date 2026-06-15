@@ -5,12 +5,12 @@
             [calculadora-calorias.controllers.handlers :as handlers]))
 
 (defroutes app-routes
-           (GET "/api/resumo" req (handlers/obter-resumo req))
-           (GET "/api/historico" req (handlers/obter-historico req))
            (POST "/api/usuario" req (handlers/salvar-perfil-usuario req))
            (POST "/api/transacoes" req (handlers/registrar-transacao req))
+           (GET "/api/transacoes" req (handlers/listar-transacoes req))
+           (GET "/api/resumo" req (handlers/mostrar-resumo req)))
 
-           (route/not-found {:status 404 :body {:erro "Rota não encontrada"}}))
+           (route/not-found {:status 404 :body {:erro "Rota não encontrada"}})
 
 (def app
   (-> app-routes

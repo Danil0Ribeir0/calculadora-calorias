@@ -8,8 +8,10 @@
   (println "1. Cadastrar Usuario")
   (println "2. Registrar Refeicao")
   (println "3. Registrar Exercicio")
-  (println "4. Ver Resumo Diario")
-  (println "5. Sair")
+  (println "4. Ver Resumo Geral")
+  (println "5. Consultar Extrato de Transacoes por Periodo")
+  (println "6. Consultar Saldo por Periodo")
+  (println "7. Sair")
   (print "Escolha uma opcao: ")
   (flush)
   (read-line))
@@ -44,16 +46,19 @@
               (println "-> Erro: O servidor não está a correr ou a rota está incorreta."))))))))
 
 (defn registrar-atividade [tipo]
-  (print "Digite o nome (em ingles): ")
+  (print "Digite o nome (em ingles, ex: apple ou running): ")
   (flush)
   (let [nome (read-line)
+        _ (print "Data (DD-MM-AAAA, ex: 25-10-2023): ")
+        _ (flush)
+        data (read-line)
+
         quantidade (if (= tipo "refeicao")
                      (do
                        (print "Quantidade consumida (em gramas, ex: 150): ")
                        (flush)
                        (try (Float/parseFloat (read-line)) (catch Exception _ 100.0)))
                      nil)
-
         duracao (if (= tipo "exercicio")
                   (do
                     (print "Duracao do exercicio (em minutos, ex: 30): ")
@@ -61,7 +66,7 @@
                     (try (Float/parseFloat (read-line)) (catch Exception _ 60.0)))
                   nil)
 
-        dados-base {:tipo tipo :nome nome}
+        dados-base {:tipo tipo :nome nome :data data}
         dados-com-qtd (if quantidade (assoc dados-base :quantidade quantidade) dados-base)
         dados-envio (if duracao (assoc dados-com-qtd :duracao duracao) dados-com-qtd)
 
@@ -77,19 +82,53 @@
         (println "-> Sucesso:" (:mensagem dados) "- Calorias:" (:calorias dados)))
       (println "-> Erro: O servidor não está a correr."))))
 
-(defn mostrar-resumo []
-  (let [resposta (try
-                   (http/get "http://localhost:3000/api/resumo" {:as :json})
-                   (catch Exception _ nil))]
+(defn mostrar-resumo-geral []
+  (let [resposta (try (http/get "http://localhost:3000/api/resumo" {:as :json}) (catch Exception _ nil))]
     (if resposta
       (let [dados (:body resposta)]
-        (println "\n--- RESUMO DIARIO ---")
+        (println "\n--- RESUMO GERAL ---")
         (println "Usuario:" (:usuario dados))
         (println "Consumidas:" (:consumidas dados) "kcal")
         (println "Gastas:" (:gastas dados) "kcal")
         (println "Saldo Atual:" (:saldo-atual dados) "kcal")
         (println "Total de Atividades Registradas:" (:total-transacoes dados)))
-      (println "-> Erro ao buscar resumo. O servidor está a correr?"))))
+      (println "-> Erro ao buscar resumo."))))
+
+(defn consultar-extrato-periodo []
+  (println "\n--- EXTRATO POR PERIODO ---")
+  (print "Data Inicial (DD-MM-AAAA): ") (flush)
+  (let [inicio (read-line)]
+    (print "Data Final (DD-MM-AAAA): ") (flush)
+    (let [fim (read-line)
+          resposta (try (http/get "http://localhost:3000/api/transacoes"
+                                  {:query-params {"inicio" inicio "fim" fim} :as :json})
+                        (catch Exception _ nil))]
+      (if resposta
+        (let [transacoes (:body resposta)]
+          (if (empty? transacoes)
+            (println "-> Nenhuma transacao encontrada neste periodo.")
+            (doseq [t transacoes]
+              (println (str "Data: " (:data t) " | Tipo: " (:tipo t)
+                            " | Nome: " (:nome t) " | Calorias: " (:calorias t))))))
+        (println "-> Erro ao buscar extrato.")))))
+
+(defn consultar-saldo-periodo []
+  (println "\n--- SALDO POR PERIODO ---")
+  (print "Data Inicial (DD-MM-AAAA): ") (flush)
+  (let [inicio (read-line)]
+    (print "Data Final (DD-MM-AAAA): ") (flush)
+    (let [fim (read-line)
+          resposta (try (http/get "http://localhost:3000/api/resumo"
+                                  {:query-params {"inicio" inicio "fim" fim} :as :json})
+                        (catch Exception _ nil))]
+      (if resposta
+        (let [dados (:body resposta)]
+          (println "\nUsuario:" (:usuario dados))
+          (println "Consumidas no Periodo:" (:consumidas dados) "kcal")
+          (println "Gastas no Periodo:" (:gastas dados) "kcal")
+          (println "Saldo Final do Periodo:" (:saldo-atual dados) "kcal")
+          (println "Total de Atividades no Periodo:" (:total-transacoes dados)))
+        (println "-> Erro ao buscar saldo.")))))
 
 (defn iniciar-cli []
   (let [opcao (exibir-menu)]
@@ -97,8 +136,10 @@
       (= opcao "1") (do (cadastrar-usuario) (recur))
       (= opcao "2") (do (registrar-atividade "refeicao") (recur))
       (= opcao "3") (do (registrar-atividade "exercicio") (recur))
-      (= opcao "4") (do (mostrar-resumo) (recur))
-      (= opcao "5") (println "A sair do sistema...")
+      (= opcao "4") (do (mostrar-resumo-geral) (recur))
+      (= opcao "5") (do (consultar-extrato-periodo) (recur))
+      (= opcao "6") (do (consultar-saldo-periodo) (recur))
+      (= opcao "7") (println "A sair do sistema...")
       :else         (do (println "-> Opcao invalida!") (recur)))))
 
 (defn -main [& _]
