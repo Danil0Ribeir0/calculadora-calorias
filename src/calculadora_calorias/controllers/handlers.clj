@@ -35,10 +35,18 @@
       :else
       (response/bad-request {:erro "O campo 'tipo' deve ser 'refeicao' ou 'exercicio'."}))))
 
+(defn obter-parametro [req nome]
+  (let [params (or (:query-params req) (:params req) {})
+        valor-string (get params nome)
+        valor-keyword (get params (keyword nome))]
+    (or valor-string
+        valor-keyword
+        (let [query-string (str (:query-string req))]
+          (second (re-find (re-pattern (str nome "=([^&]+)")) query-string))))))
+
 (defn listar-transacoes [req]
-  (let [params (:query-params req)
-        inicio (get params "inicio")
-        fim (get params "fim")
+  (let [inicio (obter-parametro req "inicio")
+        fim (obter-parametro req "fim")
         todas-transacoes (db/obter-historico)
         transacoes-filtradas (if (and inicio fim)
                                (servicos/filtrar-por-periodo todas-transacoes inicio fim)
@@ -46,9 +54,8 @@
     {:status 200 :body transacoes-filtradas}))
 
 (defn mostrar-resumo [req]
-  (let [params (:query-params req)
-        inicio (get params "inicio")
-        fim (get params "fim")
+  (let [inicio (obter-parametro req "inicio")
+        fim (obter-parametro req "fim")
         usuario (db/obter-usuario)
         todas-transacoes (db/obter-historico)
         transacoes-filtradas (if (and inicio fim)
